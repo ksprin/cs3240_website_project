@@ -1,0 +1,54 @@
+{% extends 'login/base.html' %}
+
+{# Load the tag library #}
+{% load bootstrap5 %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+    <title>Game Setup</title>
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0">Game Settings</h3>
+                    </div>
+                    <div class="card-body">
+
+                        <p>Adjust your game settings below and hit start when you're ready to play!</p>
+                        
+                        <form action = '/start' method = 'post'>
+                            <p style = 'padding-top:20px'>Game Settings: </p>
+                            
+                            <label for="cat" class="form-label">Select Category</label>
+                            <select class="form-select" id="cat" name = 'cat'>
+                                <option selected>Choose...</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.category_text }}">{{ cat.category_text }}</option>
+                                {% endfor %}
+                            </select>
+                            {% csrf_token %}
+                            <button type="submit" class="btn game-button mt-3">Start Game</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
+{% endblock %}
+

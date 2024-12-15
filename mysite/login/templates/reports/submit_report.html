@@ -1,0 +1,209 @@
+{% extends 'login/base.html' %}
+{% load socialaccount %}
+{% block content %}
+<html>
+<body>
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card w-75">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h2 class="mb-0">Submit Report</h2>
+            <div></div>
+        </div>
+        <div class="card-body">
+          <p>Welcome to the submit reports page, here you can submit either a new question suggestion or any problems you may see with the website! </p>
+            <div id="overlay">
+                <div class="d-flex justify-content-center align-items-center h-100">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+              <select class="form-select" required id="reportTypeSelect">
+                <option value="">Select Type Of Report</option>
+                <option value="1">New Question Idea</option>
+                <option value="2">Issue to report</option>
+              </select>
+              <div class="invalid-feedback">Example invalid select feedback</div>
+            </div>
+
+            <div id="issueReportForm" style="display: none;">
+
+            <form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+                {% csrf_token %}      
+                {% for field in form %}             
+                <div class="form-group" class="was-validated">
+                    <label for="{{ field.id_for_label }}" style="margin-bottom: 5px;">{{ field.label }}</label>
+                    {% if forloop.counter == 1 %}
+                        <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" class="form-control" id="{{ field.auto_id }}" {% if field.field.required %}required{% endif %}>
+                    {% elif field.field.widget.input_type == 'file' %}
+                    <div class="mb-3">
+                        <input type="file" name="{{ field.html_name }}" class="form-control" id="{{ field.auto_id }}" {% if field.field.required %}required{% endif %}>
+                        <div class="invalid-feedback">Example invalid form file feedback</div>
+                      </div>
+                    {% else %}
+                        <textarea name="{{ field.html_name }}" class="form-control" id="{{ field.auto_id }}" {% if field.field.required %}required{% endif %}>{{ field.value }}</textarea>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="invalid-feedback">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn game-button">Submit</button>
+                </div>
+            </form>
+          </div>
+          <div id="newQuestionForm" style="display: none;" class="container">
+            <div class="row">
+                <!-- Left Column for Input Fields -->
+                <div class="col-md-6">
+                    <form method="post" action="{% url 'submit_question_idea' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_category" class="form-label">Select Category</label>
+                            <select class="form-select" id="id_category" name='category' required>
+                              <option value="" disabled selected>Choose...</option>
+                              {% for cat in categories %}
+                                  <option value="{{ cat.category_text }}">{{ cat.category_text }}</option>
+                              {% endfor %}
+                          </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="question_name">Question Name</label>
+                            <input type="text" name="question_text" class="form-control" id="question_name" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="answer_text">Answer Text</label>
+                            <input type="text" name="answer_text" class="form-control" id="answer_text" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="hint">Hint</label>
+                            <input type="text" name="hint" class="form-control" id="hint" required>
+                        </div>
+                        <input type="hidden" name="max_lat" id="max_lat" required>
+                        <input type="hidden" name="min_lat" id="min_lat" required>
+                        <input type="hidden" name="max_long" id="max_long" required>
+                        <input type="hidden" name="min_long" id="min_long" required>
+
+                        <div class="d-flex justify-content-center mb-3">
+                            <button type="submit" class="btn game-button" id="submitQuestionButton" disabled>Submit Question</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <label>Drop a Marker on Where The Answer is:</label>
+                    <div id="map" style="max-width:100%;height:400px;"></div>
+                    <p id="mapInstruction" class="text-danger">Please drop a pin on the map to enable the submission.</p>
+                </div>
+            </div>
+          </div>      
+        </div>
+    </div>
+</div>
+
+<script>
+    function validateForm() {
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput.files.length === 0) {
+            return true;
+        }
+
+        const allowedExtensions = ["jpg", "jpeg", "png", "gif"];
+        const fileName = fileInput.value.toLowerCase();
+        const fileExtension = fileName.split('.').pop();
+
+        if (!allowedExtensions.includes(fileExtension)) {
+            alert("Only image files with extensions jpg, jpeg, png, and gif are allowed.");
+            return false;
+        }
+
+        document.getElementById('overlay').style.display = 'block';
+        return true;
+    }
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var selectElement = document.getElementById('reportTypeSelect');
+    
+    selectElement.addEventListener('change', function() {
+      var issueReportForm = document.getElementById('issueReportForm');
+      var newQuestionForm = document.getElementById('newQuestionForm');
+      issueReportForm.style.display = 'none';
+      newQuestionForm.style.display = 'none';
+      if (this.value === '1') {
+        newQuestionForm.style.display = 'block';
+      } else if (this.value === '2') {
+        issueReportForm.style.display = 'block';
+      }
+    });
+  });
+</script>
+<script>
+  let map, marker, bounds;
+
+  function myMap() {
+    var mapProp= {
+      center:new google.maps.LatLng(38.033554, -78.507980),
+      zoom:14,
+    };
+    map = new google.maps.Map(document.getElementById("map"),mapProp);
+
+    google.maps.event.addListener(map, 'click', function(event) {
+        placeMarker(event.latLng);
+        calculateBounds(event.latLng);
+        enableSubmitButton(); 
+      });
+    }
+    function placeMarker(location) {
+      if (marker) {
+        marker.setPosition(location);
+      } else {
+        marker = new google.maps.Marker({
+          position: location,
+          map: map
+        });
+      }
+    }
+
+    function calculateBounds(location) {
+      const lat = location.lat();
+      const lng = location.lng();
+      const percent = 0.000075; 
+
+      const maxLat = lat + (lat * percent);
+      const minLat = lat - (lat * percent);
+      const maxLng = lng + (lng * percent);
+      const minLng = lng - (lng * percent);
+
+      console.log(maxLat)
+      console.log(minLat)
+      console.log(maxLng)
+      console.log(minLng)
+
+      document.getElementById('max_lat').value = maxLat.toFixed(6);
+      document.getElementById('min_lat').value = minLat.toFixed(6);
+      document.getElementById('max_long').value = maxLng.toFixed(6);
+      document.getElementById('min_long').value = minLng.toFixed(6);
+    }
+  function showLocation(){
+    return marker.getPosition().toString()
+  }
+  function enableSubmitButton() {
+    document.getElementById('submitQuestionButton').disabled = false;
+    document.getElementById('mapInstruction').style.display = 'none'; 
+  }
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtuI9vercCBQdDFoZY-d0CfDSu9tdBq04&callback=myMap"></script>
+
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'login/base.html' %}
+
+{% load bootstrap5 %}
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{% block content %}
+{% if messages %}
+    <div style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
+        {% for message in messages %}
+            <div class="toast" role="alert" data-delay="5000">
+                <div class="toast-header">
+                    <strong class="mr-auto">Notification</strong>
+                    <button type="button" style="position: absolute; top: 10px; right: 15px" class="btn-close" data-dismiss="toast">
+                    </button>
+                </div>
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card w-75">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <a href="{% url 'homepage' %}" class="btn btn-secondary">Back</a>
+            <h2 class="mb-0">Add Category</h2>
+            <div></div>
+        </div>
+        <div class="card-body">
+            <p>Welcome to the add category page, here you add new categories to be used in the game!</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ cat_form.category_text.id_for_label }}" class="form-label">{{ cat_form.category_text.label }}</label>
+                    <input type="text" class="form-control" id="{{ cat_form.category_text.id_for_label }}" name="{{ cat_form.category_text.name }}" placeholder="Enter category name">
+                    {% if cat_form.category_text.errors %}
+                        <div class="alert alert-danger mt-1">
+                            {{ cat_form.category_text.errors.as_text }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ cat_form.description.id_for_label }}" class="form-label">{{ cat_form.description.label }}</label>
+                    <textarea class="form-control" id="{{ cat_form.description.id_for_label }}" name="{{ cat_form.description.name }}" placeholder="Enter description" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn game-button">Create</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toasts = document.querySelectorAll('.toast');
+        for (var i = 0; i < toasts.length; i++) {
+            var toast = new bootstrap.Toast(toasts[i]);
+            toast.show();
+        }
+    });
+  </script>
+
+{% endblock %}

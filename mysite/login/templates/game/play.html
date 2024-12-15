@@ -1,0 +1,199 @@
+{% extends 'login/base.html' %}
+
+{# Load the tag library #}
+{% load bootstrap5 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% load socialaccount %}
+{% block content %}
+
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+</head>
+
+<style>
+  .custom-alert {
+    background-color: rgba(240, 173, 78, 1);
+    color: white;
+    background-blend-mode: lighten;
+    border-radius:10%;
+  }
+</style>
+
+
+<!DOCTYPE html>
+<html>
+ <!-- Sources Used: https://www.w3schools.com/graphics/google_maps_basic.asp -->
+  <body>
+    
+    <div class="game-container ">
+        
+      <div class="game-header">
+          <h3>{{ game.current_question.question_text }}</h3>
+      </div>
+      <div class='row'>
+        <div class="col-md-3">
+          {% if messages %}
+          <div id = "wrong_message" class="alert wrong-answer-alert fade-in-left"  role = "alert">
+            <!-- <span style="float:right;">
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </span> -->
+            {% for guessWrong in messages %}
+              {%if guessWrong.tags == "warning" %}
+              <span style="color: red;">
+                <strong>{{guessWrong}}</strong> <br>
+              </span>
+              {%else%}
+              {{guessWrong}}
+              {%endif%}
+            {% endfor %}
+          </div>
+          {%endif%}
+          <div id="timer" name='timer'class="game-timer"> {{second}}</div>
+              <form method = 'post' id="game_info">
+                <p style = 'padding-top:20px; display: none;'>Select Location: </p>
+                <label for="lat" style="display: none;">Latitude:</label>
+                <input type="text" id="lat" name = 'lat' value = 'None Selected' style="display: none;">{{ lat_val }}<br>
+                <label for="long" style="display: none;">Longitude:</label>
+                <input type="text" id="long" name = 'long' value = 'None Selected' style="display: none;">{{ long_val }}<br>
+                {% csrf_token %}
+                <button type="submit" class="btn game-button" id="submitQuestionButton" disabled>Submit Location</button>
+                <input type="hidden" id="hint_provided" name="hint_provided" value="false">
+                <input type="hidden" id="time_out" name="time_out" value="false">
+              </form>
+              <button type="button" class="btn mt-3 game-button" onclick="showHint(); this.disabled=true;"
+                  {% if game.hint_provided %}disabled{% endif %} aria-disabled="false">Need a hint?</button>
+              <div class="hint_text" id="hint" {% if not game.hint_provided %}style="display: none;"{% endif %}>
+                <i class="fas fa-lightbulb"></i> <!-- FontAwesome icon example -->
+                {{ game.current_question.hint }}
+            </div>
+            
+          </div>
+          <div class="col-md-9">
+              <div id="googleMap" style="width: 100%; height: 600px; border: 2px solid orange;border-radius: 10px;"></div>
+              <p id="mapInstruction" class="text-danger game-instructions">Please drop a pin on the map to enable the submission.</p>
+          </div>
+      </div>
+  </div>
+  <!-- this block below is hidden but is needed for the functioning of the app for now, please don't delete -->
+  <div style = "display: none"  class= "container" style = "padding-top: 50px">
+    <div class = 'row'>
+      <div class="col-md-4">
+        <h1 class="text-center">Map</h1>
+        <p>Category: {{ game.category }}</p>
+        <p>Question: {{ game.current_question.question_text }}</p>
+        <p style="display: none;">Current Location:</p>
+        <p style="display: none;" id = "locationText">None Selected</p>
+        <form method = 'post' id="game_info">
+          <p style = 'padding-top:20px; display: none;'>Select Location: </p>
+          <label for="lat" style="display: none;">Latitude:</label>
+          <input type="text" id="lat" name = 'lat' value = 'None Selected' style="display: none;">{{ lat_val }}<br>
+          <label for="long" style="display: none;">Longitude:</label>
+          <input type="text" id="long" name = 'long' value = 'None Selected' style="display: none;">{{ long_val }}<br>
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary" style="align-items: center;" id="submitQuestionButton" disabled>Submit Location</button>
+          <input type="hidden" id="hint_provided" name="hint_provided" value="false">
+          <input type="hidden" id="time_out" name="time_out" value="false">
+        </form>
+        <button type="button" class="btn btn-primary" onclick="showHint(); this.disabled=true;"
+                {% if game.hint_provided %}disabled{% endif %}>Need a hint?</button>
+        <div id="hint" {% if not game.hint_provided %}style="display: none;"{% endif %}>
+          {{ game.current_question.hint }}
+        </div>
+        <div id="timer" name='timer' style = "padding-top: 30px;font-size: x-large;">{{ second }}</div>
+      </div>
+      <div class = "col-md-8">
+        <div id="googleMap" style="width:100%;height:600px;"></div>
+        <p id="mapInstruction" class="text-danger">Please drop a pin on the map to enable the submission.</p>
+      </div>
+    </div>
+  </div>
+
+    <script>
+      var marker;
+      var locationText = document.getElementById("locationText");
+      var latText = document.getElementById("lat")
+      var longText = document.getElementById("long")
+
+      function myMap() {
+        var mapProp= {
+          center:new google.maps.LatLng(38.033554, -78.507980),
+          zoom:14,
+        };
+        var map = new google.maps.Map(document.getElementById("googleMap"),mapProp);
+
+        google.maps.event.addListener(map, 'click', function(event) {
+          addMarker(map, event.latLng);
+          enableSubmitButton();
+        });
+      }
+
+      function addMarker(map, location) {
+        if (marker == null) {
+          marker = new google.maps.Marker({
+          position:location, map:map
+          });
+          locationText.innerHTML = showLocation();
+          latText.value = marker.getPosition().lat()
+          longText.value = marker.getPosition().lng()
+        } else {
+          marker.setPosition(location);
+          locationText.innerHTML = showLocation();
+          latText.value = marker.getPosition().lat()
+          longText.value = marker.getPosition().lng()
+        }
+        marker.setMap(map);
+      }
+ 
+      function showLocation(){
+        //return "location"
+        return marker.getPosition().toString()
+      }
+      function enableSubmitButton() {
+        document.getElementById('submitQuestionButton').disabled = false;
+        document.getElementById('mapInstruction').style.display = 'none';
+      }
+
+      function showIncorrectAnswer() {
+        document.getElementById("wrong_message")
+      }
+      //source: https://stackoverflow.com/questions/6010718/how-to-create-a-timer-javascript-component-in-a-django-template
+      //description: used the starter code the asker provided as reference for using seconds as a global variable
+      
+        var timer = document.getElementById("timer")
+        seconds = parseInt("{{second}}")
+        timer.innerHTML = seconds;
+
+      function displayTimer() {
+        if (seconds <= 0) {
+            document.getElementById("time_out").value = "true";
+            document.forms.game_info.submit();
+        }
+        else{
+          seconds = seconds - 1;
+          timer.innerHTML = seconds;
+        }
+      }
+      setInterval(displayTimer,1000);
+
+      //source: https://www.shecodes.io/athena/3469-how-to-display-text-when-a-button-is-clicked-with-javascript
+      function showHint() {
+        document.getElementById("hint_provided").value = "true";
+        var hint = document.getElementById("hint");
+        hint.style.display = "block";
+      }
+
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtuI9vercCBQdDFoZY-d0CfDSu9tdBq04&callback=myMap"></script>
+
+  </body>
+</html>
+{% endblock %}
+
+

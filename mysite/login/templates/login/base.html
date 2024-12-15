@@ -1,0 +1,423 @@
+{% load socialaccount %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="  https://report-image-django.s3.us-east-2.amazonaws.com/svg_logo.svg" type="image/svg+xml">
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+    <title>UVAGuesser</title>
+    <style>
+    /*Navbar Styling */
+    .vertical-nav { 
+        width: 250px; 
+        min-height: 100vh;
+        border-right: 1px solid #e4e4e4;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+    .vertical-nav a {
+        color: black;
+        padding: 15px 20px;
+        text-decoration: none;
+        display: block;
+        transition: background-color 0.3s;
+        border-radius: 5px; 
+        margin-top: 2px;    
+        margin-bottom: 2px;
+    }
+    .vertical-nav a:hover {
+        background-color: orange;
+    }
+
+    .vertical-nav .active {
+        background-color: orange;
+    }
+        body {
+            margin-left: 0;
+        }
+        .vertical-nav li.nav-item a.nav-link.bg-light,
+    .vertical-nav li.nav-item a.nav-link:hover,
+    .vertical-nav li.nav-item a.nav-link.active {
+        background-color: orange !important;
+    }
+    .vertical-nav li.nav-item a.nav-link img {
+        margin-right: 10px;
+        margin-top: -3px;
+        width: 20px; 
+        height: 20px; 
+    }
+    /*User Name and Picture Styling */
+    .user-icon-container {
+        position: relative;
+    }
+    .user-icon {
+        position: absolute;
+        top: 15px; 
+        right: 15px; 
+        padding: 10px;
+        background-color: transparent; 
+        /* z-index: 1000;  */
+    }
+    
+    .admin-profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+    
+    .admin-details {
+        display: inline-block;
+        vertical-align: top;
+        margin-left: 5px;
+    }
+    .admin-role {
+        font-size: 12px; 
+        color: #888;
+    }
+    /* Consistent for styling across tables */
+    .content-table {
+    border-collapse: collapse;
+    margin: 25px auto; 
+    font-size: 0.9em;
+    width: 100%;
+    max-width: 100%; 
+    border-radius: 5px 5px 0 0;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .content-table thead tr {
+        background-color: orange;
+        color: #ffffff;
+        text-align: left;
+        font-weight: bold;
+    }
+
+    .content-table th,
+    .content-table td {
+        padding: 12px 15px;
+    }
+
+    .content-table tbody tr {
+        border-bottom: 1px solid #dddddd;
+    }
+
+    .content-table tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+    }
+
+    .content-table tbody tr:last-of-type {
+        border-bottom: 2px solid orange;
+    }
+
+    .content-table tbody tr.active-row {
+        font-weight: bold;
+        color: orange;
+    }
+    /* For smaller screen ports, setup specific styling for navbar and user icon */
+    @media (max-width: 768px) {
+        .vertical-nav {
+            width: 100%;
+            position: relative;
+        }
+        .navbar-toggler {
+            margin-left: 15px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        .user-icon-container {
+            position: relative;
+        }
+        .user-icon {
+            position: absolute;
+            top: 5px; 
+            right: 10px; 
+            background-color: transparent; 
+            z-index: 1000; 
+        }
+        .admin-profile-pic {
+            height: 25px;
+            border-radius: 50%;
+            width: 25px;
+        }    
+        .admin-details {
+            display: inline-block;
+            margin-left: 3px;
+            vertical-align: top;
+        }
+        .admin-role {
+            color: #888;
+            font-size: 10px;
+        }        
+    }
+    /* For larger screen ports, we want to hide the navbar toggler and have it display all the time */
+    @media (min-width: 769px) {
+        .navbar-toggler {
+            display: none;
+        }
+        .content {
+            padding-left: 250px;
+        }
+    }
+    /* Overlay (dimming) styling for spinning logo on submit report screen */
+    #overlay {
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background-color:rgba(0,0,0,0.5);
+        z-index:1000;
+    }
+
+    .game-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            padding: 20px;
+        }
+        .game-header {
+            background-color: orange;
+            color: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .game-map {
+            width: 100%;
+            height: 600px;
+            border: 2px solid orange;
+            border-radius: 10px;
+        }
+        .game-button {
+            background-color: orange;
+            border-color: orange;
+            color: white;
+        }
+        .game-button:hover {
+            background-color: rgb(207, 166, 0);
+            border-color: orange;
+            color: white;
+        }
+        .game-timer {
+            background-color: #f0ad4e;
+            color: #ffffff;
+            padding: 10px;
+            font-size:large;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Digital-7', monospace;
+            animation: pulse 1s infinite alternate;
+        }
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .game-timer, #submitQuestionButton, .game-button {
+            width: 100%; 
+        }
+        .hint_text {
+            background-color: #dff0d8; 
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 1em;
+        }
+        .game-instructions {
+            font-size: 1.2em;
+            color: #17a2b8;
+        }
+        .wrong-answer-alert {
+            background-color: #f0ad4e;
+            color: white;
+            border-radius:8px;
+            font-family: 'Digital-7', monospace;
+            text-align: center;
+            animation: wrong_move 1s ease;
+            border-color: darkorange;
+            border-width: 2px;
+
+        }
+
+        .wrong-answer-alert.move  {
+            animation: wrong_move 1s ease;
+        }
+
+        @keyframes wrong_move {
+            0% {left: -1500px}   
+            60% {left: 5px}
+            100% {left: 0px}
+        }
+        
+        @keyframes into_space {
+            0% {top: -10px}
+            100% {top: 0px}
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <!-- div that holds the user icon and name/ role in the top right corner. Shrinks and grows with correct screen port -->
+    <div class="user-icon-container">
+    <div class="user-icon">
+        {% with user.socialaccount_set.all.0 as social_account %}
+        <img class="admin-profile-pic" src="{{ social_account.extra_data.picture }}" alt="{{ user.username }}’s profile picture">
+        <div class="admin-details">
+            <div class="admin-name">{{user.first_name}} {{user.last_name}}</div>
+            {% if user.is_superuser %}
+                <div class="admin-role">Admin</div>
+            {% else %}
+                <div class="admin-role">User</div>
+            {% endif %}
+        </div>
+        {% endwith %}    
+    </div>
+</div>
+    <div>
+        <div>
+
+    <nav class="navbar navbar-expand-md bg-light navbar-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+
+    <div class="vertical-nav bg-light">
+        <div class="py-4 px-3">
+            <h4 class="font-weight-bold text-black mb-4">UVA-Guesser</h4>
+            <ul class="nav flex-column mb-0">
+                <li class="nav-item">
+                    <a href="/homepage/" class="nav-link text-dark font-italic">
+                        <img
+                        loading="lazy"
+                        srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/e82e4833-d777-488e-b931-4857ca8ac18b?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w"
+                        />
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/start" class="nav-link text-dark font-italic">
+                        <img
+                            loading="lazy"
+                            srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/0a401cdf-02d4-4dd4-9426-974927bd2dc9?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w"
+                            class="img"
+                            />
+                        Game
+                    </a>
+                </li>
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a href="{% url 'manage_users' %}" class="nav-link text-dark font-italic">
+                        <img
+                            loading="lazy"
+                            srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/2359f343-fb82-4523-8ced-5ef2c6404f67?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w"
+                            class="img"
+                            />
+                         Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/view_reports/" class="nav-link text-dark font-italic">
+                        <img
+                            loading="lazy"
+                            srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/a7f547f6-bc95-4072-ba87-0dd8ce83f5e0?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w"
+                            class="img"
+                            />
+                         View Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/game_settings" class="nav-link text-dark font-italic">
+                        <img
+                            loading="lazy"
+                            src="https://cdn.builder.io/api/v1/image/assets/TEMP/2441371e-a194-490b-9977-7ba103bb4035?apiKey=19404d8061944448afd499e6ec0e14e3&"
+                            class="img"
+                            />
+                         Game Settings
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a href="/submit_report/" class="nav-link text-dark font-italic">
+                        <img
+                        loading="lazy"
+                        srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/86c1c8d9-2fda-42c0-a2de-5fb80665a8bf?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w"
+                        class="img"
+                        />
+                        Submit Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'leaderboard' %}" class="nav-link text-dark font-italic">
+                        <img
+                            loading="lazy"
+                            srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/866ebfca-5106-4fc3-a966-139e04ef03db?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w"
+                            class="img"
+                        />
+                        Leaderboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'notifications' %}" class="nav-link text-dark font-italic">
+                        <img
+                            loading="lazy"
+                            src="https://cdn.builder.io/api/v1/image/assets/TEMP/1828e37f-2295-4b31-82d7-4446e005ccbf?apiKey=19404d8061944448afd499e6ec0e14e3& 100w"
+                            class="img"
+                            />
+                        Notifications
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-dark font-italic" href="{% url 'account_logout' %}">
+                        <img
+                        loading="lazy"
+                        srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/cdaa5671-2f7f-4479-b1e5-a8b0be9925b9?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w"
+                        class="img"
+                        />  
+                         Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</nav>
+<!-- Critical block content to ensure other pages that extend this actually have a "place" to display -->
+</div>
+
+    <div class="container content mt-5">
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var navItems = document.querySelectorAll('.vertical-nav a');
+            var currentUrl = window.location.pathname;
+            navItems.forEach(function(item) {
+                if (item.getAttribute('href') === currentUrl) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+        
+</body>
+</html>

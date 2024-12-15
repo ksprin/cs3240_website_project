@@ -1,0 +1,71 @@
+{% extends 'login/base.html' %}
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% block content %}
+{% if messages %}
+    <div style="position: absolute; top: 10px; right: 10px;">
+        {% for message in messages %}
+            <div class="toast" role="alert" data-delay="5000">
+                <div class="toast-header">
+                    <strong class="mr-auto">Notification</strong>
+                    <button type="button" style="position: absolute; top: 10px; right: 15px" class="btn-close" data-dismiss="toast">
+                    </button>
+                </div>
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+<h2 class="mb-4">Manage Users</h2>
+<p>Welcome to the manage user page. To change the account type of specific users, please toggle their account type by clicking on the checkbox, then clicking update. You will see the changes reflected by a change under the account type for that specific user.</p>
+<form method="POST">
+    {% csrf_token %}
+    <table class="content-table">
+        <thead class="thead-dark">
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Account Type</th>
+                <th style="text-align: center;">Toggle Account Type</th>
+                <th style="text-align: center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.is_superuser %}
+                        Admin
+                    {% else %}
+                        User
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="superuser_{{ user.id }}" name="superuser_{{ user.id }}" {% if user.is_superuser %}checked{% endif %}>
+                        <label class="custom-control-label" for="superuser_{{ user.id }}"></label>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <button type="submit" name="update" value="{{ user.id }}" class="btn game-button btn-sm">Update</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var toasts = document.querySelectorAll('.toast');
+        for (var i = 0; i < toasts.length; i++) {
+            var toast = new bootstrap.Toast(toasts[i]);
+            toast.show();
+        }
+    });
+</script>
+
+{% endblock %}
+

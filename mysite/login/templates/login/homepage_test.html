@@ -1,0 +1,261 @@
+{% load socialaccount %}
+<head>
+  <meta charset="UTF-8">
+  <title>UVAGuesser</title>
+  <link rel="icon" href="  https://report-image-django.s3.us-east-2.amazonaws.com/svg_logo.svg" type="image/svg+xml">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<!DOCTYPE html>
+<div class="div-3">
+  <div class="column">
+    <div class="div-4">
+      {% if user.is_authenticated %}
+      <div class="welcome-text">Hello, {{ user.username }}</div>
+      <div class="welcome-prompt">We are glad to see you back with us</div>
+      <a href="{% url 'start' %}" class="next-button" role="button" aria-pressed="true">
+        <div class="next-text">START</div>
+      </a>
+      <a href="{% url 'account_logout' %}" class="logout-button" role="button" aria-pressed="true">
+        <div class="next-text">LOGOUT</div>
+      </a>
+
+      {% else %}
+      <div class="welcome-text">Welcome</div>
+      <div class="welcome-prompt">Please Login Below</div>
+      <a href="{% provider_login_url 'google' %}">
+        <div class="login-button">
+          <div class="login-button-text">
+            <img loading="lazy"
+              srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w, https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&width=200 200w, https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&width=400 400w, https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&width=800 800w, https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&width=1200 1200w, https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&width=1600 1600w, https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&width=2000 2000w, https://cdn.builder.io/api/v1/image/assets/TEMP/2ab7b48a-c467-493a-87bf-9cd9194259ee?apiKey=19404d8061944448afd499e6ec0e14e3&"
+              class="img" />
+            <div class="login-with-google">
+              <span style="
+                    font-family: Poppins, -apple-system, Roboto, Helvetica,
+                      sans-serif;
+                    font-weight: 400;
+                  ">
+                Login with
+              </span>
+              <span style="
+                    font-family: Poppins, -apple-system, Roboto, Helvetica,
+                      sans-serif;
+                    font-weight: 700;
+                  ">
+                google
+              </span>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="column-2">
+    <img loading="lazy"
+      srcset="https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&width=100 100w, https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&width=200 200w, https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&width=400 400w, https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&width=800 800w, https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&width=1200 1200w, https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&width=1600 1600w, https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&width=2000 2000w, https://cdn.builder.io/api/v1/image/assets/TEMP/fceb5002-229a-428c-b1a4-aa5cd528e3d1?apiKey=19404d8061944448afd499e6ec0e14e3&"
+      class="img-2" />
+  </div>
+</div>
+<style>
+  .div-3 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  @media (max-width: 1300px) {
+    .div-3 {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 40%;
+    margin-right: 40px;
+    margin-left: 40px;
+  }
+
+  @media (max-width: 1300px) {
+    .div-4 {
+      margin-top: 40px;
+    }
+  }
+
+  .welcome-text {
+    color: #1c1c1c;
+    font-family: Smooch Sans, sans-serif;
+    font-size: 120px;
+    font-weight: 700;
+    text-align: left;
+    text-wrap: nowrap;
+  }
+
+  @media (max-width: 1300px) {
+    .welcome-text {
+      text-align: left;
+      font-size: 40px;
+      text-wrap: initial;
+    }
+  }
+
+  .welcome-prompt {
+    color: #1c1c1c;
+    font-family: Smooch Sans, sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    align-self: center;
+    text-wrap: nowrap;
+    text-align: left;
+  }
+
+  @media (max-width: 1300px) {
+    .welcome-prompt {
+      text-align: left;
+      font-size: 18px;
+      text-wrap: initial;
+    }
+  }
+
+  .login-button {
+    border-radius: 13px;
+    border: 1px solid #1c1c1c;
+    align-self: stretch;
+    display: flex;
+    margin-top: 20px;
+    width: 100%;
+    flex-direction: column;
+    padding: 11px 20px;
+  }
+
+  @media (max-width: 1300px) {
+    .login-button {
+      margin-right: 1px;
+    }
+  }
+
+  .login-button-text {
+    align-self: center;
+    display: flex;
+    width: 142px;
+    max-width: 100%;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .img {
+    aspect-ratio: 1;
+    object-fit: cover;
+    object-position: center;
+    width: 30px;
+    overflow: hidden;
+    align-self: stretch;
+    max-width: 100%;
+  }
+
+  .login-with-google {
+    color: #1c1c1c;
+    font-family: Poppins, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    align-self: center;
+    text-wrap: nowrap;
+    margin: auto 0;
+  }
+
+  @media (max-width: 1300px) {
+    .login-with-google {
+      text-wrap: initial;
+    }
+  }
+
+  .div-10 {
+    border-radius: 13px;
+    border: 1px solid #1c1c1c;
+    align-self: stretch;
+    display: flex;
+    margin-top: 16px;
+    width: 100%;
+    flex-direction: column;
+    padding: 11px 20px;
+  }
+
+  .next-button {
+    border-radius: 13px;
+    background-color: #1c1c1c;
+    align-self: stretch;
+    display: flex;
+    margin-top: 19px;
+    width: 100%;
+    flex-grow: 1;
+    flex-direction: column;
+    padding: 22px 20px;
+  }
+
+  .logout-button {
+    border-radius: 13px;
+    background-color: #c62c2c;
+    align-self: stretch;
+    display: flex;
+    margin-top: 19px;
+    width: 100%;
+    flex-grow: 1;
+    flex-direction: column;
+    padding: 22px 20px;
+    text-decoration: none;
+  }
+
+  @media (max-width: 1300px) {
+    .next-button {
+      margin-left: 1px;
+    }
+  }
+
+  .next-text {
+    color: #fff;
+    font-family: Poppins, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    align-self: center;
+    text-wrap: nowrap;
+  }
+
+  .column-2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 60%;
+  }
+
+  @media (max-width: 1300px) {
+    .column-2 {
+      width: 100%;
+      order: -1;
+    }
+
+    .img-2 {
+      width: 100%;
+    }
+  }
+
+  .img-2 {
+    aspect-ratio: 0.98;
+    object-fit: cover;
+    object-position: center;
+    max-width: 90%;
+    max-height: 70vh;
+    }
+
+  .next-button,
+  .next-button:hover,
+  .next-button:active,
+  .next-button:focus {
+    text-decoration: none;
+  }
+</style>

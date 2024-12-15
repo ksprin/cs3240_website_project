@@ -1,0 +1,68 @@
+{% extends 'login/base.html' %}
+
+{# Load the tag library #}
+{% load bootstrap5 %}
+{% block content %}
+<style>
+    .text-large { font-size: 170% }
+    .text-medium { font-size: 120% }
+    .score-card {
+        width: 18rem;
+        background-color: #FEF5E7;
+        border-color: black;
+        border: 2px solid orange;
+        border-radius: 10px;
+    }
+</style>
+
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0">Game Ended</h3>
+                    </div>
+                    <div class="card-body text-center">
+
+                        <h4 {% if won %}class="card-title text-success text-large"
+                            {% else %}class="card-title text-danger text-large"{% endif %}>
+                            {% if won %}
+                                <i class="fas fa-star"></i> <!-- FontAwesome icon example -->
+                                {{ message }}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                {{ message }}
+                                <i class="fas fa-face-sad-tear"></i>
+                            {% endif %}
+                        </h4>
+
+                        <p class="mb-1 mt-3">The answer was:</p>
+                        <p class="text-medium"><strong>{{ answer }}</strong></p>
+
+                        <div class="score-card mx-auto text-center mt-4 mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mt-1">Score</h5>
+                                <p class="mb-1">Points earned: <strong>{{ points_earned }}</strong></p>
+                                <p class="mt-1 mb-1">You now have <strong>{{ total_points }}</strong> total points!</p>
+                            </div>
+                        </div>
+
+                        <a href="{% url 'start' %}" class="btn game-button">Play Again</a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+
+{% endblock %}

@@ -1,0 +1,248 @@
+{% extends 'login/base.html' %}
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% block content %}
+<body>
+    {% if messages %}
+    <div style="position: absolute; top: 10px; right: 10px;">
+        {% for message in messages %}
+            <div class="toast" role="alert" data-delay="5000">
+                <div class="toast-header">
+                    <strong class="mr-auto">Notification</strong>
+                    <button type="button" style="position: absolute; top: 10px; right: 15px" class="btn-close" data-dismiss="toast">
+                    </button>
+                </div>
+                <div class="toast-body">
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<h2 class="mb-4">View Reports</h2>
+<p>Welcome to the manage reports page. Here, you can opt to approve or disapprove specific suggestions for changes on the website and new question ideas. Do so by clicking open and viewing the specific report information. 
+<!-- <div class="container mt-5 d-flex justify-content-center"> -->
+    <table class="content-table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Report Name</th>
+                <th scope="col">Report Description</th>
+                <th scope="col">Submitted By</th>
+                <th scope="col" style="text-align: center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if reports %}
+            {% for report in reports %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ report.report_name }}</td>
+                <td>{{ report.report_description|truncatechars:50 }}</td>
+                <td>{{ report.submitted_by }}</td>
+                <td>
+                    <button class="btn game-button" data-toggle="modal" data-target="#reportModal{{ report.id }}">Open</button>
+                </td>
+            </tr>
+
+            <div class="modal fade" id="reportModal{{ report.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Report {{report.id}}: {{ report.report_name }}</h5>
+                            <button type="button" class="btn-close" data-dismiss="modal">
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Description:
+                            {{ report.report_description }}
+                        </div>
+                        {% if report.image %}
+                        <img src="{{ report.image.url }}" alt="Report Image" />
+                        {% else %}
+                        <p style="text-align: center;">No image included.</p>
+                        {% endif %}
+                            <div style="text-align: center; align-items: center; margin-bottom: 10px;">
+                                <form method="POST" action="/change_report_status/{{ report.id }}/">
+                                    {% csrf_token %}
+                                    <hr />
+                                    <button id="approveButton" type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                                    <a class="btn btn-danger disapproveButton" data-report-id="{{ report.id }}">Disapprove</a>
+                                    <!-- <a id="disapproveButton" class="btn btn-danger">Disapprove</a> -->
+                                    <div id="disapprove_form{{ report.id }}" style="visibility: hidden; opacity: 0; max-height: 0; transition: opacity 1.0s, max-height 2.0s, visibility 2.0s;">
+                                        <div class="input-group my-3 px-3">
+                                            <input id="admin_message{{ report.id }}" name="admin_message" type="text" class="form-control" placeholder="Why do you disapprove?">
+                                            <button class="btn btn-outline-secondary" type="submit" name="action" value="disapprove" id="disapproveButton">Submit</button>
+                                        </div>                                        
+                                    </div>
+                                </form>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="5" class= "font-italic" style="text-align: center; ">No reports currently</td>
+            </tr>
+        {% endif %}
+
+        </tbody>
+    </table>
+
+    <h2 class="mb-4">View Questions</h2>
+    <table class="content-table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Question</th>
+                <th scope="col">Answer</th>
+                <th scope="col">Submitted By</th>
+                <th scope="col" style="text-align: center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if questions %}
+            {% for question in questions %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ question.question_text|truncatechars:50 }}</td>
+                <td>{{ question.answer_text|truncatechars:50 }}</td>
+                <td>{{ question.submitted_by }}</td>
+                <td>
+                    <button class="btn game-button" data-toggle="modal" data-target="#reportModal{{ report.id }}"
+                        data-min-lat="{{ question.min_lat }}"
+                        data-min-long="{{ question.min_long }}"
+                        data-max-lat="{{ question.max_lat }}"
+                        data-max-long="{{ question.max_long }}">
+                        Open
+                  </button>
+                  
+                </td>
+            </tr>
+
+            <div class="modal fade" id="reportModal{{ report.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Question: {{ question.question_text }}</h5>
+                            <button type="button" class="btn-close" id="modal-close" data-dismiss="modal">
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Answer:
+                            {{ question.answer_text }}
+                            <br/>
+                            Hint:
+                            {{ question.hint }}
+                            
+                        </div>
+                            <div id="reportMap{{ report.id }}" style="height: 400px; width: 100%;"></div>
+
+                            <div style="text-align: center; align-items: center; margin-bottom: 10px;">
+                                <form method="POST" action="{% url 'change_question_status' question.id %}">
+                                    {% csrf_token %}
+                                    <hr />
+                                    <button id="approveButton" type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                                    <a class="btn btn-danger disapproveButton" data-report-id="{{ report.id }}">Disapprove</a>
+                                    <div id="disapprove_form{{ report.id }}" style="visibility: hidden; opacity: 0; max-height: 0; transition: opacity 1.0s, max-height 2.0s, visibility 2.0s;">
+                                        <div class="input-group my-3 px-3">
+                                            <input id="admin_message{{ report.id }}" name="admin_message" type="text" class="form-control" placeholder="Why do you disapprove?">
+                                            <button class="btn btn-outline-secondary" type="submit" name="action" value="disapprove" id="disapproveButton">Submit</button>
+                                        </div>                                        
+                                    </div>
+                                </form>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="5" class= "font-italic" style="text-align: center; ">No reports currently</td>
+            </tr>
+        {% endif %}
+
+        </tbody>
+    </table>
+
+
+    <script>
+        document.querySelectorAll('.disapproveButton').forEach(button => {
+            button.addEventListener('click', function() {
+                var reportId = this.getAttribute('data-report-id');
+                var form = document.getElementById('disapprove_form' + reportId); 
+                form.style.visibility = 'visible';
+                form.style.opacity = '1';
+                form.style.maxHeight = '500px'; 
+
+                var input = document.getElementById('admin_message' + reportId); 
+                input.setAttribute('required', '');
+            });
+        });
+
+        document.getElementById('approveButton').addEventListener('click', function() {
+            var input = document.getElementById('admin_message');
+            input.removeAttribute('required');
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[id^="reportModal"]').forEach(function(modal) {
+                $(modal).on('hidden.bs.modal', function () {
+                    window.location.reload();
+                });
+            });
+        });
+
+    </script>    
+<script>
+    function myMap(reportId, minLat, minLong, maxLat, maxLong) {
+        console.log('Initializing map with:', minLat, minLong, maxLat, maxLong);
+        var avgLat = (minLat + maxLat) / 2;
+        var avgLong = (minLong + maxLong) / 2;
+
+        var map = new google.maps.Map(document.getElementById('reportMap' + reportId), {
+            zoom: 15,
+            center: new google.maps.LatLng(avgLat, avgLong),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(avgLat, avgLong),
+            map: map,
+            title: 'Center Marker'
+        });
+    }
+
+    document.querySelectorAll('[data-target^="#reportModal"]').forEach(button => {
+        button.addEventListener('click', function() {
+            var reportId = this.getAttribute('data-target').replace('#reportModal', '');
+            var minLat = parseFloat(this.getAttribute('data-min-lat'));
+            var minLong = parseFloat(this.getAttribute('data-min-long'));
+            var maxLat = parseFloat(this.getAttribute('data-max-lat'));
+            var maxLong = parseFloat(this.getAttribute('data-max-long'));
+
+            console.log('Opening modal for report:', reportId);
+            console.log('Coordinates:', minLat, minLong, maxLat, maxLong);
+
+            myMap(reportId, minLat, minLong, maxLat, maxLong);
+        });
+    });
+
+</script>
+
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtuI9vercCBQdDFoZY-d0CfDSu9tdBq04&callback=myMap"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var toasts = document.querySelectorAll('.toast');
+            for (var i = 0; i < toasts.length; i++) {
+                var toast = new bootstrap.Toast(toasts[i]);
+                toast.show();
+            }
+        });
+      </script>  
+    
+</body>
+{% endblock %}

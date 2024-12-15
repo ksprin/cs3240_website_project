@@ -1,0 +1,29 @@
+{% extends 'login/base.html' %}
+{% block content %}
+<h2 class="mb-4">Leaderboard</h2>
+<p>Welcome to the leaderboard. Here, you can view how you fair againt other users of the app. </p> 
+
+<div>
+  <table class="content-table">
+    <thead class="thead-dark">
+      <tr>
+        <th scope="col">Rank</th>
+        <th scope="col">UserName</th>
+        <th scope="col">Score</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% csrf_token %}
+
+        {% for u_score in scores %}
+        <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ u_score.info_for }}</td>
+            <td>{{ u_score.score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{%endblock%}
