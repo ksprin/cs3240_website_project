@@ -1,7 +1,11 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/xHnRfY9D)
-# Django Practice Assessment
+# UVA-Guesser (Location Guessing Game Class Project)
 
-__Name:__
+A semester-long class project I created with a team of classmates. The project utilizes Python, HTML, the Django Framework, SQL Databases, and the Google Maps API to construct a hint based location guessing game. Users are able to log into the site with their Google Account, and then see themselves on the leaderboard. The project was built over the course of a semester for CS 3240: Advanced Software Development, taught by Mark Sherriff. 
 
-__Computing ID:__
+Team:
+Kayla Sprincis
+Zaid Fada
+Siddarth Selvakumar
+Genevieve Purcell
+Shawn Kao
 
